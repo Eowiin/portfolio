@@ -33,3 +33,6 @@ pnpm-debug.log*
 
 # typescript
 *.tsbuildinfo
+
+# Python deployment checks
+__pycache__/

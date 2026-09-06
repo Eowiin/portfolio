@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   // Keep the API checker: this environment suppresses the CLI checker's output.
   experimental: {
     useTypeScriptCli: false,

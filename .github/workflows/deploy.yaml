@@ -1,0 +1,94 @@
+name: Build and deploy portfolio
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Une publication et un déploiement à la fois, sans interrompre un remplacement.
+concurrency:
+  group: portfolio-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.image.outputs.name }}@${{ steps.build.outputs.digest }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm ci
+      - run: npm run lint
+      - run: python3 -m unittest discover -s tests -p "test_*.py"
+      - name: Image name
+        id: image
+        run: echo "name=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+      - name: Require private package before publication
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/ghcr.mjs check
+      - uses: docker/setup-qemu-action@v4
+        if: vars.IMAGE_PLATFORM != '' && vars.IMAGE_PLATFORM != 'linux/amd64'
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+      - name: Build and publish private image
+        id: build
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: true
+          pull: true
+          platforms: ${{ vars.IMAGE_PLATFORM || 'linux/amd64' }}
+          tags: ${{ steps.image.outputs.name }}:sha-${{ github.sha }}
+          labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          build-args: NEXT_PUBLIC_SITE_URL=${{ vars.NEXT_PUBLIC_SITE_URL }}
+          cache-from: type=registry,ref=${{ steps.image.outputs.name }}:buildcache
+          cache-to: type=registry,ref=${{ steps.image.outputs.name }}:buildcache,mode=max
+      - name: Confirm private visibility
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/ghcr.mjs verify
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Deploy via SSH and check health
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+          VPS_PORT: ${{ vars.VPS_PORT || '22' }}
+          VPS_PATH: ${{ vars.VPS_PATH }}
+          PORTFOLIO_IMAGE: ${{ needs.build.outputs.image }}
+        run: bash scripts/ci-deploy.sh
+      - name: Keep ten recent images and both deployed versions
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PROTECTED_IMAGES_FILE: ${{ runner.temp }}/portfolio-protected-images
+        run: node scripts/ghcr.mjs cleanup

@@ -1,0 +1,8 @@
+# Construction locale facultative ; jamais utilisée par le déploiement CI.
+services:
+  portfolio:
+    image: portfolio-local:dev
+    build:
+      context: .
+      args:
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:?Renseigner NEXT_PUBLIC_SITE_URL}

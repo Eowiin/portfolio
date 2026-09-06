@@ -71,17 +71,187 @@ Pour modifier les coordonnées ou la présentation générale, éditer `src/data
 
 L’ajout d’une nouvelle page projet nécessite aussi de mettre à jour `src/app/sitemap.ts`.
 
-## Production
+## Production : GitHub Actions → GHCR privé → VPS
 
-Configurer `NEXT_PUBLIC_SITE_URL` avec le domaine public **avant le build**, puis exécuter :
+Le workflow `.github/workflows/deploy.yaml` construit le portfolio sur GitHub à
+chaque push sur `main` (ou lancement manuel), puis le déploie via SSH. Le VPS ne
+compile rien. Les étapes sont : lint, tests du déploiement, build Next.js avec
+vérification TypeScript, publication GHCR, téléchargement sur le VPS et contrôle
+de santé. Le build cible x86_64, l’architecture du VPS actuel. La variable de dépôt
+optionnelle `IMAGE_PLATFORM=linux/arm64` permettrait de cibler un futur VPS ARM.
+
+L’image est `ghcr.io/eowiin/portfolio:sha-<commit>`. Le déploiement utilise son
+**digest immuable** `ghcr.io/eowiin/portfolio@sha256:…`, pas un tag `latest`.
+Le cache des couches Docker est stocké dans le même package GHCR privé, sous le
+tag `buildcache`. Les dépendances sont réutilisées lorsque le lockfile ne change
+pas. Aucun fichier `.env`, clé SSH ou archive locale n’entre dans le build.
+
+### Confidentialité et rétention
+
+GHCR crée un nouveau package en privé. Le workflow vérifie sa visibilité avant
+publication et après : il s’arrête si un package existant est public ou si la
+vérification échoue. Il ne change jamais sa visibilité vers public. Si le package
+existe déjà, accorder au dépôt l’accès Actions en écriture dans ses paramètres.
+La publication utilise le `GITHUB_TOKEN` temporaire du workflow.
+
+Après un déploiement réussi, le nettoyage garde les dix versions taguées par
+commit les plus récentes **et les digests des versions actuelle et précédente**.
+Il ignore `buildcache`, les tags étrangers et les manifests sans tag, qui peuvent
+être nécessaires aux images multiarchitectures. Il ne garantit donc pas un
+plafond de stockage. Un refus de suppression GHCR signale un avertissement sans
+invalider un déploiement réussi. Aucun nettoyage global de Docker n’est exécuté
+sur le VPS partagé.
+
+### Configuration GitHub
+
+Dans le dépôt `Eowiin/portfolio`, configurer la variable de dépôt :
+
+| Variable de dépôt | Valeur |
+| --- | --- |
+| `NEXT_PUBLIC_SITE_URL` | `https://eowinstudio.com` |
+
+Créer l’environnement GitHub **production**, puis y configurer :
+
+| Variable d’environnement | Valeur |
+| --- | --- |
+| `VPS_PATH` | `/opt/portfolio` |
+| `VPS_PORT` | `22` (défaut) |
+
+| Secret de l’environnement | Contenu |
+| --- | --- |
+| `VPS_HOST` | `77.42.85.235` |
+| `VPS_USER` | Utilisateur SSH autorisé à gérer le portfolio et Docker. |
+| `VPS_SSH_KEY` | Clé privée dédiée au déploiement ; installer sa clé publique dans `authorized_keys` de cet utilisateur. |
+| `VPS_KNOWN_HOSTS` | Entrée SSH vérifiée pour `77.42.85.235`. |
+
+La connexion locale `ssh songspot` utilise actuellement `root`, et Docker possède
+déjà un login GHCR sous ce compte (ses droits sur le futur package restent à
+vérifier). Une clé dédiée
+permet de révoquer l’accès CI séparément de la clé personnelle. Ne pas committer
+ces secrets. Pour obtenir l’entrée déjà approuvée localement :
 
 ```bash
-npm ci
-npm run build
-npm start
+ssh-keygen -F 77.42.85.235
 ```
 
-Le serveur écoute par défaut sur le port 3000. La variable `PORT` permet de choisir un autre port. Pour un hébergement sur serveur, placer le processus derrière un reverse proxy HTTPS et le gérer avec un gestionnaire de services.
+Copier la ligne de clé hôte (pas le commentaire). Ne pas désactiver la vérification
+SSH ; si la clé du serveur change, vérifier son empreinte avant de remplacer le
+secret. Le workflow ne fait pas confiance à un `ssh-keyscan` effectué à la volée.
+
+### Préparer le VPS une seule fois
+
+Prérequis : Docker Engine, Compose avec `--wait`, Bash, `flock` et GNU coreutils.
+Le dossier `/opt/portfolio/releases` et le fichier `/opt/portfolio/.env` ont été
+préparés sous `root` sur le VPS actuel. Si un autre utilisateur est choisi, lui
+attribuer ces dossiers. Le fichier `.env` contient :
+
+```dotenv
+PORTFOLIO_PORT=3001
+PORTFOLIO_CPUS=1.0
+PORTFOLIO_MEMORY=512m
+```
+
+Connecter Docker à GHCR **sous le même utilisateur que la CI utilise en SSH**.
+Utiliser un PAT GitHub classic dédié, avec `read:packages`, appartenant à un
+compte autorisé à lire le package privé :
+
+```bash
+read -rsp 'Jeton GHCR : ' GHCR_READ_TOKEN
+printf '%s' "$GHCR_READ_TOKEN" | docker login ghcr.io -u Eowiin --password-stdin
+unset GHCR_READ_TOKEN
+```
+
+Ne pas transmettre le jeton dans Git, dans une commande littérale ou dans le
+chat. Le VPS conserve cette authentification Docker pour les téléchargements ;
+prévoir son renouvellement à expiration. Il n’a pas besoin du code source, de
+Node.js, d’un accès Git au dépôt ni d’un jeton d’écriture GHCR.
+
+Une fois la configuration GitHub et le login GHCR prêts, pousser sur `main` ou
+lancer **Build and deploy portfolio** dans Actions.
+
+### Domaine et HTTPS sur le VPS actuel
+
+Nginx est déjà installé pour Songspot et les autres services. Le portfolio publie
+seulement `127.0.0.1:3001`. Le fichier `deploy/nginx.conf` contient un serveur dédié
+à `eowinstudio.com` ; installer ce fichier après le premier déploiement réussi :
+
+```bash
+sudo cp /opt/portfolio/nginx.conf /etc/nginx/sites-available/portfolio
+sudo ln -s /etc/nginx/sites-available/portfolio /etc/nginx/sites-enabled/portfolio
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+La configuration a été préparée dans `/opt/portfolio/nginx.conf` sur le VPS,
+mais n’est pas activée. Dans le DNS
+Infomaniak, remplacer l’enregistrement A de `eowinstudio.com` par `77.42.85.235` et
+corriger ou retirer tout AAAA qui pointe ailleurs. Après propagation DNS, activer
+HTTPS avec le Certbot déjà installé :
+
+```bash
+sudo certbot --nginx -d eowinstudio.com
+```
+
+La configuration ne réclame pas `www`. Pour l’ajouter, prévoir son DNS, son nom
+Nginx et son certificat. Les configurations des autres sites restent distinctes.
+
+### Déploiement et retour arrière
+
+Le workflow copie uniquement Compose et le script dans un dossier de version
+`/opt/portfolio/releases/<commit>-<run>-<attempt>`. Il télécharge l’image avant de
+remplacer le conteneur et attend son état sain. Un échec de téléchargement laisse
+le site actif. Si le démarrage échoue, le script tente de relancer la version
+précédente et fait échouer le workflow. Lors du tout premier déploiement, il n’y a
+pas encore de version de secours. Une courte interruption reste possible.
+
+Les liens `/opt/portfolio/current` et `/opt/portfolio/previous` permettent de
+retrouver les deux dernières versions réussies. Un verrou évite deux déploiements
+simultanés. Pour revenir manuellement à la précédente :
+
+```bash
+release=$(readlink -f /opt/portfolio/previous)
+image=$(sed -n 's/^PORTFOLIO_IMAGE=//p' "$release/image.env")
+bash "$release/scripts/deploy.sh" /opt/portfolio "$release" "$image"
+```
+
+Chaque version conserve son Compose et son digest. Le fichier `.env` des limites
+reste commun. Les anciens dossiers et images Docker locaux sont conservés ; ne
+pas lancer de `docker system prune` global sur le VPS partagé sans vérifier les
+besoins des autres projets.
+
+### Ressources et exploitation
+
+Les plafonds initiaux sont **1 CPU et 512 Mo de RAM**, ajustables dans
+`/opt/portfolio/.env`. Ils ne réservent pas les ressources. Le CPU est ralenti au
+plafond ; un dépassement mémoire peut provoquer un arrêt et un redémarrage.
+Modifier les limites ne demande pas de reconstruire l’image. Exemple pour
+appliquer les changements et suivre le service :
+
+```bash
+cd /opt/portfolio
+# image.env complète .env avec le digest réellement déployé.
+docker compose --env-file .env --env-file current/image.env -f current/compose.yaml up -d --no-build --wait
+docker compose --env-file .env --env-file current/image.env -f current/compose.yaml logs --tail=100 -f
+docker compose --env-file .env --env-file current/image.env -f current/compose.yaml stats
+```
+
+Le conteneur redémarre après un plantage ou un reboot, sauf arrêt volontaire. Un
+état `unhealthy` seul ne déclenche pas de redémarrage. Les logs tournent sur trois
+fichiers de 10 Mo. Le cache d’images Next.js est recréé au remplacement du
+conteneur ; aucun volume de données n’est requis par le portfolio actuel.
+
+### Construction Docker locale facultative
+
+Le Compose de production n’a aucune instruction de build. Pour tester localement,
+copier `.env.example` vers `.env`, puis utiliser l’extension dédiée :
+
+```bash
+PORTFOLIO_IMAGE=portfolio-local:dev docker compose -f compose.yaml -f compose.build.yaml up -d --build --wait
+```
+
+L’URL publique est intégrée au build ; la changer nécessite une nouvelle image.
+
+Références : [cache Docker dans GitHub Actions](https://docs.docker.com/build/ci/github-actions/cache/),
+[GHCR privé et authentification](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry).
 
 ## Fichiers versionnés
 
