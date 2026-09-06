@@ -1,0 +1,41 @@
+name: Initialize private portfolio registry
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [.github/workflows/initialize-registry.yaml]
+permissions:
+  contents: read
+  packages: write
+concurrency:
+  group: portfolio-production
+  cancel-in-progress: false
+jobs:
+  initialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Remove only the accidentally public first package
+        id: prepare
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/initialize-ghcr.mjs
+      - uses: docker/login-action@v4
+        if: steps.prepare.outputs.existing != 'true'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+      - name: Create empty package without project source or repository linkage
+        if: steps.prepare.outputs.existing != 'true'
+        run: |
+          printf 'FROM scratch\nLABEL purpose="empty-registry-initialization"\n' | docker build -t ghcr.io/eowiin/portfolio:bootstrap -
+          docker push ghcr.io/eowiin/portfolio:bootstrap
+      - name: Verify private visibility before allowing application publication
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/ghcr.mjs verify
