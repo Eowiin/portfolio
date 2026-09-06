@@ -106,8 +106,8 @@ class RegistryTests(unittest.TestCase):
     def test_public_package_rejected(self):
         self.assertNotEqual(self.run_registry('check', 'public').returncode, 0)
 
-    def test_first_publication_allowed_but_verified_afterwards(self):
-        self.assertEqual(self.run_registry('check', 'missing').returncode, 0)
+    def test_missing_package_blocks_publication_and_verification(self):
+        self.assertNotEqual(self.run_registry('check', 'missing').returncode, 0)
         self.assertNotEqual(self.run_registry('verify', 'missing').returncode, 0)
         self.assertEqual(self.run_registry('verify').returncode, 0)
 

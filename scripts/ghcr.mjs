@@ -29,8 +29,7 @@ try {
   }
 } catch (error) {
   if (mode === 'check' && error.status === 404) {
-    console.log('First publication: GHCR creates new packages as private.');
-    process.exit(0);
+    throw new Error('A private GHCR package must exist before publishing application files. Create an empty package, verify Private visibility and grant this repository Actions access first.');
   }
   throw error;
 }

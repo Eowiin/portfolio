@@ -54,7 +54,6 @@ jobs:
           pull: true
           platforms: ${{ vars.IMAGE_PLATFORM || 'linux/amd64' }}
           tags: ${{ steps.image.outputs.name }}:sha-${{ github.sha }}
-          labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
           build-args: NEXT_PUBLIC_SITE_URL=${{ vars.NEXT_PUBLIC_SITE_URL }}
           cache-from: type=registry,ref=${{ steps.image.outputs.name }}:buildcache
           cache-to: type=registry,ref=${{ steps.image.outputs.name }}:buildcache,mode=max

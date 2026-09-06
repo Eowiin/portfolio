@@ -88,11 +88,18 @@ pas. Aucun fichier `.env`, clé SSH ou archive locale n’entre dans le build.
 
 ### Confidentialité et rétention
 
-GHCR crée un nouveau package en privé. Le workflow vérifie sa visibilité avant
-publication et après : il s’arrête si un package existant est public ou si la
-vérification échoue. Il ne change jamais sa visibilité vers public. Si le package
-existe déjà, accorder au dépôt l’accès Actions en écriture dans ses paramètres.
-La publication utilise le `GITHUB_TOKEN` temporaire du workflow.
+Un package GHCR **existant et vérifié privé** est obligatoire avant tout envoi du
+code ou du cache. Le workflow refuse aussi les packages absents : il ne suppose
+plus que la première publication aura la bonne visibilité. Le premier essai du
+6 septembre 2026 a exposé l’image ; le contrôle après publication a bloqué le
+déploiement, mais ne suffisait pas à empêcher cette exposition.
+
+Créer d’abord un package avec une image vide, sans code ni cache du projet, et
+vérifier dans GitHub Packages que sa visibilité est **Private**. Configurer son
+accès Actions explicitement pour `Eowiin/portfolio`, sans héritage d’accès du
+dépôt public. Le workflow n’ajoute pas de label de liaison automatique au dépôt.
+La publication utilise ensuite son `GITHUB_TOKEN` temporaire. Un package déjà
+public doit être supprimé et recréé : GitHub ne permet pas de le rendre privé.
 
 Après un déploiement réussi, le nettoyage garde les dix versions taguées par
 commit les plus récentes **et les digests des versions actuelle et précédente**.
