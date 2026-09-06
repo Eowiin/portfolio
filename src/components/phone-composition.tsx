@@ -1,13 +1,14 @@
-import Image from "next/image";
+import Image, { type StaticImageData } from "next/image";
+import playlistsCapture from "@/assets/songspot/playlists.webp";
+import statsCapture from "@/assets/songspot/stats.webp";
 
 type PhoneProps = {
-  src: string;
+  src: StaticImageData;
   alt: string;
   className: string;
-  priority?: boolean;
 };
 
-function Phone({ src, alt, className, priority = false }: PhoneProps) {
+function Phone({ src, alt, className }: PhoneProps) {
   return (
     <div className={`phone ${className}`}>
       <div className="phone__speaker" aria-hidden="true" />
@@ -16,10 +17,9 @@ function Phone({ src, alt, className, priority = false }: PhoneProps) {
           className="phone__capture"
           src={src}
           alt={alt}
-          width={963}
-          height={2084}
-          sizes="(max-width: 720px) 68vw, 310px"
-          priority={priority}
+          preload
+          placeholder="blur"
+          // Already compressed at source: avoid image processing on the first request.
           unoptimized
         />
       </div>
@@ -36,14 +36,13 @@ export function PhoneComposition() {
       <div className="phone-composition__glow" aria-hidden="true" />
       <Phone
         className="phone--back"
-        src="/images/songspot/playlists.svg"
+        src={playlistsCapture}
         alt="Songspot, sélection d’une playlist musicale"
       />
       <Phone
         className="phone--front"
-        src="/images/songspot/stats.svg"
+        src={statsCapture}
         alt="Songspot, écran d’accueil avec le suivi de progression"
-        priority
       />
     </div>
   );
