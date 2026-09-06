@@ -73,6 +73,9 @@ L’ajout d’une nouvelle page projet nécessite aussi de mettre à jour `src/a
 
 ## Production : GitHub Actions → GHCR privé → VPS
 
+Le portfolio est en ligne sur **https://eowinstudio.com**. Le VPS sert le site via
+Nginx et un certificat Let’s Encrypt renouvelé automatiquement par Certbot.
+
 Le workflow `.github/workflows/deploy.yaml` construit le portfolio sur GitHub à
 chaque push sur `main` (ou lancement manuel), puis le déploie via SSH. Le VPS ne
 compile rien. Les étapes sont : lint, tests du déploiement, build Next.js avec
@@ -156,9 +159,7 @@ Créer l’environnement GitHub **production**, puis y configurer :
 | `VPS_SSH_KEY` | Clé privée dédiée au déploiement ; installer sa clé publique dans `authorized_keys` de cet utilisateur. |
 | `VPS_KNOWN_HOSTS` | Entrée SSH vérifiée pour `77.42.85.235`. |
 
-La connexion locale `ssh songspot` utilise actuellement `root`, et Docker possède
-déjà un login GHCR sous ce compte (ses droits sur le futur package restent à
-vérifier). Une clé dédiée
+La connexion locale `ssh songspot` utilise actuellement `root`. Une clé dédiée
 permet de révoquer l’accès CI séparément de la clé personnelle. Ne pas committer
 ces secrets. Pour obtenir l’entrée déjà approuvée localement :
 
@@ -194,7 +195,9 @@ lancer **Build and deploy portfolio** dans Actions.
 
 Nginx est déjà installé pour Songspot et les autres services. Le portfolio publie
 seulement `127.0.0.1:3001`. Le fichier `deploy/nginx.conf` contient un serveur dédié
-à `eowinstudio.com` ; installer ce fichier après le premier déploiement réussi :
+à `eowinstudio.com`. Sur le VPS actuel, le site est déjà activé avec HTTPS.
+Les commandes suivantes servent uniquement à préparer un **nouveau VPS**, après
+son premier déploiement réussi :
 
 ```bash
 sudo cp /opt/portfolio/nginx.conf /etc/nginx/sites-available/portfolio
@@ -202,11 +205,11 @@ sudo ln -s /etc/nginx/sites-available/portfolio /etc/nginx/sites-enabled/portfol
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
-La configuration a été préparée dans `/opt/portfolio/nginx.conf` sur le VPS,
-mais n’est pas activée. Dans le DNS
-Infomaniak, remplacer l’enregistrement A de `eowinstudio.com` par `77.42.85.235` et
-corriger ou retirer tout AAAA qui pointe ailleurs. Après propagation DNS, activer
-HTTPS avec le Certbot déjà installé :
+Le fichier `/opt/portfolio/nginx.conf` est le modèle HTTP initial. La configuration
+active `/etc/nginx/sites-available/portfolio` contient les ajouts HTTPS de Certbot :
+ne pas l’écraser avec le modèle HTTP. Le DNS A pointe vers `77.42.85.235`.
+Sur un nouveau serveur, faire pointer le DNS vers sa propre IP, corriger tout AAAA
+inadapté, puis activer HTTPS après propagation :
 
 ```bash
 sudo certbot --nginx -d eowinstudio.com
