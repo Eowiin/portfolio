@@ -109,6 +109,31 @@ plafond de stockage. Un refus de suppression GHCR signale un avertissement sans
 invalider un déploiement réussi. Aucun nettoyage global de Docker n’est exécuté
 sur le VPS partagé.
 
+### Initialisation unique du package privé
+
+L’ancien package public a été supprimé. Le workflow d’initialisation se lance
+**manuellement uniquement** et ne supprime plus aucun package.
+
+1. Créer un PAT GitHub **classic** avec `write:packages`, sans accès `repo` ni
+   `delete:packages`, depuis
+   <https://github.com/settings/tokens/new?scopes=write:packages>.
+2. L’ajouter comme secret `GHCR_BOOTSTRAP_TOKEN` dans l’environnement GitHub
+   `production` du dépôt.
+3. Lancer **Initialize private portfolio registry** depuis Actions. Ce workflow
+   envoie uniquement une image `FROM scratch`, sans code ni cache du portfolio,
+   puis vérifie que le package est privé. L’utilisation d’un PAT évite la liaison
+   automatique au dépôt public faite par le `GITHUB_TOKEN` lors de la création.
+4. Dans les paramètres du package privé, sous **Manage Actions access**, ajouter
+   `Eowiin/portfolio` avec le rôle **Admin** (nécessaire au nettoyage des anciennes
+   versions). Ne pas activer l’héritage des permissions du dépôt public.
+5. Révoquer le PAT d’initialisation et supprimer le secret `GHCR_BOOTSTRAP_TOKEN`.
+   Les déploiements courants utilisent exclusivement le `GITHUB_TOKEN` automatique.
+
+Le VPS a besoin séparément d’un login GHCR valide avec `read:packages` pour lire
+le package privé. Le jeton précédemment enregistré sur le VPS a été refusé par
+l’API GitHub (HTTP 401) : ses droits doivent être revérifiés ou son login renouvelé
+avant le premier déploiement.
+
 ### Configuration GitHub
 
 Dans le dépôt `Eowiin/portfolio`, configurer la variable de dépôt :

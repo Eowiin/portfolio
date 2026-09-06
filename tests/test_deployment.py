@@ -76,7 +76,7 @@ sys.exit(1 if new and fail and fail in sys.argv else 0)
 
 
 class RegistryTests(unittest.TestCase):
-    def run_registry(self, mode, visibility='private', versions=None):
+    def run_registry(self, mode, visibility='private', versions=None, script='ghcr.mjs'):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             mock = root / 'mock.mjs'
@@ -95,13 +95,22 @@ class RegistryTests(unittest.TestCase):
             protected = root / 'protected'
             protected.write_text(f'PORTFOLIO_IMAGE={IMAGE}{"a" * 64}\n')
             return subprocess.run(['node', '--import', str(mock),
-                                   str(REPO / 'scripts/ghcr.mjs'), mode],
+                                   str(REPO / 'scripts' / script), mode],
                                   env={**os.environ, 'GH_TOKEN': 'test-only',
                                        'GITHUB_REPOSITORY': 'Eowiin/portfolio',
                                        'PROTECTED_IMAGES_FILE': str(protected),
+                                       'GITHUB_OUTPUT': str(root / 'outputs'),
                                        'FIXTURE': json.dumps({'visibility': visibility,
                                                               'versions': versions or []})},
                                   capture_output=True, text=True)
+
+    def test_initializer_allows_empty_or_private_but_refuses_public(self):
+        for visibility in ['missing', 'private']:
+            result = self.run_registry('check', visibility, script='initialize-ghcr.mjs')
+            self.assertEqual(result.returncode, 0, result.stderr)
+        result = self.run_registry('check', 'public', script='initialize-ghcr.mjs')
+        self.assertNotEqual(result.returncode, 0)
+        self.assertNotIn('DELETE', result.stdout)
 
     def test_public_package_rejected(self):
         self.assertNotEqual(self.run_registry('check', 'public').returncode, 0)
