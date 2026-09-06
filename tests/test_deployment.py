@@ -26,6 +26,12 @@ class DeploymentTests(unittest.TestCase):
 import os, sys
 with open(os.environ['CALLS'], 'a') as log:
     log.write(' '.join(sys.argv[1:]) + '\\n')
+if sys.argv[1:3] == ['image', 'inspect']:
+    sys.exit(0 if os.environ.get('LOCAL_IMAGE') == '1' else 1)
+if sys.argv[1] == 'login':
+    from pathlib import Path
+    Path(os.environ['DOCKER_CONFIG'], 'config.json').write_text(sys.stdin.read())
+    sys.exit(1 if os.environ.get('FAIL') == 'login' else 0)
 new = '/releases/new/' in ' '.join(sys.argv)
 fail = os.environ.get('FAIL', '')
 sys.exit(1 if new and fail and fail in sys.argv else 0)
@@ -45,6 +51,28 @@ sys.exit(1 if new and fail and fail in sys.argv else 0)
         return subprocess.run(['bash', str(REPO / 'scripts/deploy.sh'),
                                str(self.root), str(self.new), IMAGE + 'b' * 64],
                               env={**self.env, 'FAIL': failure}, capture_output=True)
+
+    def test_temporary_credentials_removed_on_success_and_failure(self):
+        for failure in ['', 'login', 'pull', 'up']:
+            with self.subTest(failure=failure):
+                result = subprocess.run(
+                    ['bash', str(REPO / 'scripts/deploy.sh'), str(self.root),
+                     str(self.new), IMAGE + 'b' * 64, 'Eowiin'],
+                    env={**self.env, 'FAIL': failure}, input=b'test-secret',
+                    capture_output=True)
+                self.assertEqual(result.returncode == 0, not failure)
+                self.assertEqual(list(self.root.glob('.registry-auth.*')), [])
+                self.assertNotIn(b'test-secret', result.stdout + result.stderr)
+                self.assertNotIn('test-secret', (self.root / 'calls').read_text())
+
+    def test_manual_rollback_reuses_cached_image_without_registry(self):
+        result = subprocess.run(
+            ['bash', str(REPO / 'scripts/deploy.sh'), str(self.root),
+             str(self.new), IMAGE + 'b' * 64],
+            env={**self.env, 'LOCAL_IMAGE': '1'}, capture_output=True)
+        self.assertEqual(result.returncode, 0)
+        self.assertNotIn(' pull', (self.root / 'calls').read_text())
+        self.assertNotIn('login', (self.root / 'calls').read_text())
 
     def test_success_and_manual_rollback(self):
         self.assertEqual(self.deploy().returncode, 0)

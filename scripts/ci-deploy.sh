@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 : "${VPS_HOST:?}" "${VPS_USER:?}" "${VPS_SSH_KEY:?}" "${VPS_KNOWN_HOSTS:?}"
+: "${GHCR_TOKEN:?}" "${GHCR_USER:?}"
+[[ "$GHCR_USER" =~ ^[a-zA-Z0-9][a-zA-Z0-9-]*$ ]]
 : "${VPS_PATH:?}" "${PORTFOLIO_IMAGE:?}" "${RUNNER_TEMP:?}"
 [[ "$VPS_HOST" =~ ^[a-zA-Z0-9][a-zA-Z0-9.-]*$ ]]
 [[ "$VPS_USER" =~ ^[a-zA-Z_][a-zA-Z0-9_-]*$ ]]
@@ -22,8 +24,8 @@ release="$VPS_PATH/releases/$GITHUB_SHA-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
 ssh "${ssh_options[@]}" "$target" "mkdir -p '$release'"
 tar -cf - compose.yaml scripts/deploy.sh |
   ssh "${ssh_options[@]}" "$target" "tar -xf - -C '$release'"
-ssh "${ssh_options[@]}" "$target" \
-  "bash '$release/scripts/deploy.sh' '$VPS_PATH' '$release' '$PORTFOLIO_IMAGE'"
+printf '%s' "$GHCR_TOKEN" | ssh "${ssh_options[@]}" "$target" \
+  "bash '$release/scripts/deploy.sh' '$VPS_PATH' '$release' '$PORTFOLIO_IMAGE' '$GHCR_USER'"
 # Keep the live image and the immediately preceding release during registry cleanup.
 ssh "${ssh_options[@]}" "$target" \
   "cat '$VPS_PATH/current/image.env'; if test -f '$VPS_PATH/previous/image.env'; then cat '$VPS_PATH/previous/image.env'; fi" \

@@ -129,10 +129,10 @@ L’ancien package public a été supprimé. Le workflow d’initialisation se l
 5. Révoquer le PAT d’initialisation et supprimer le secret `GHCR_BOOTSTRAP_TOKEN`.
    Les déploiements courants utilisent exclusivement le `GITHUB_TOKEN` automatique.
 
-Le VPS a besoin séparément d’un login GHCR valide avec `read:packages` pour lire
-le package privé. Le jeton précédemment enregistré sur le VPS a été refusé par
-l’API GitHub (HTTP 401) : ses droits doivent être revérifiés ou son login renouvelé
-avant le premier déploiement.
+Le déploiement transmet le `GITHUB_TOKEN` temporaire au VPS par l’entrée standard
+SSH. Docker utilise un dossier d’authentification temporaire, supprimé à la fin
+(même si le déploiement échoue). Aucun PAT permanent supplémentaire n’est requis
+sur le VPS et les identifiants Docker des autres projets ne sont pas modifiés.
 
 ### Configuration GitHub
 
@@ -183,22 +183,11 @@ PORTFOLIO_CPUS=1.0
 PORTFOLIO_MEMORY=512m
 ```
 
-Connecter Docker à GHCR **sous le même utilisateur que la CI utilise en SSH**.
-Utiliser un PAT GitHub classic dédié, avec `read:packages`, appartenant à un
-compte autorisé à lire le package privé :
+L’authentification GHCR est fournie temporairement par le workflow au moment du
+déploiement. Le VPS n’a pas besoin d’un login Docker permanent pour le portfolio,
+ni du code source, de Node.js ou d’un accès Git au dépôt.
 
-```bash
-read -rsp 'Jeton GHCR : ' GHCR_READ_TOKEN
-printf '%s' "$GHCR_READ_TOKEN" | docker login ghcr.io -u Eowiin --password-stdin
-unset GHCR_READ_TOKEN
-```
-
-Ne pas transmettre le jeton dans Git, dans une commande littérale ou dans le
-chat. Le VPS conserve cette authentification Docker pour les téléchargements ;
-prévoir son renouvellement à expiration. Il n’a pas besoin du code source, de
-Node.js, d’un accès Git au dépôt ni d’un jeton d’écriture GHCR.
-
-Une fois la configuration GitHub et le login GHCR prêts, pousser sur `main` ou
+Une fois la configuration GitHub et l’accès Actions au package prêts, pousser sur `main` ou
 lancer **Build and deploy portfolio** dans Actions.
 
 ### Domaine et HTTPS sur le VPS actuel
@@ -245,6 +234,8 @@ image=$(sed -n 's/^PORTFOLIO_IMAGE=//p' "$release/image.env")
 bash "$release/scripts/deploy.sh" /opt/portfolio "$release" "$image"
 ```
 
+Le retour arrière réutilise l’image locale si elle est présente. Si elle a été
+supprimée du VPS, un login GHCR valide sera nécessaire pour la télécharger.
 Chaque version conserve son Compose et son digest. Le fichier `.env` des limites
 reste commun. Les anciens dossiers et images Docker locaux sont conservés ; ne
 pas lancer de `docker system prune` global sur le VPS partagé sans vérifier les
