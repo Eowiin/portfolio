@@ -11,6 +11,10 @@ export type Project = {
   name: string;
   category: string;
   registeredUsers: string;
+  appStoreAchievement?: {
+    value: string;
+    label: string;
+  };
   platforms: string[];
   technologies: string[];
   publishedAt: string;
@@ -29,6 +33,10 @@ export const projects: Project[] = [
     name: "Songspot",
     category: "Blind test musical",
     registeredUsers: "30 000+ inscrits",
+    appStoreAchievement: {
+      value: "Top 7",
+      label: "atteint dans la catégorie Musique de l’App Store",
+    },
     platforms: ["iOS", "Android", "Web"],
     technologies: ["Flutter", "Django"],
     publishedAt: "mars 2026",

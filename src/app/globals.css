@@ -530,6 +530,19 @@ ul {
   width: 0.65rem;
 }
 
+.project-card__achievement {
+  color: #d3c9bc;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin-top: 0.85rem;
+  max-width: 44ch;
+}
+
+.project-card__achievement strong {
+  color: var(--text);
+  font-weight: 650;
+}
+
 .project-card__meta {
   color: var(--text-muted);
   display: flex;

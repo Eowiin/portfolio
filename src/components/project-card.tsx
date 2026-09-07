@@ -22,6 +22,12 @@ export function ProjectCard({ project }: { project: Project }) {
           <span className="metric-dot" aria-hidden="true" />
           {project.registeredUsers}
         </p>
+        {project.appStoreAchievement && (
+          <p className="project-card__achievement">
+            <strong>{project.appStoreAchievement.value}</strong>{" "}
+            {project.appStoreAchievement.label}
+          </p>
+        )}
         <div className="project-card__meta">
           <span>{project.platforms.join(" · ")}</span>
           <span>{project.technologies.join(" · ")}</span>

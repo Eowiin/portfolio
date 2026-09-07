@@ -5,6 +5,7 @@ import { ProjectGallery } from "@/components/project-gallery";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { songspot } from "@/data/projects";
+import statsCapture from "@/assets/songspot/stats.webp";
 
 export const metadata: Metadata = {
   title: "Songspot",
@@ -74,13 +75,11 @@ export default function SongspotPage() {
               <div className="case-phone__screen">
                 <Image
                   className="case-phone__capture"
-                  src="/images/songspot/stats.svg"
+                  src={statsCapture}
                   alt="Écran d’accueil Songspot avec statistiques et modes solo et 1v1"
-                  width={963}
-                  height={2084}
-                  sizes="(max-width: 740px) 74vw, 390px"
                   unoptimized
-                  priority
+                  preload
+                  placeholder="blur"
                 />
               </div>
             </div>
@@ -146,6 +145,14 @@ export default function SongspotPage() {
               Environ 3 000 utilisateurs actifs par jour observés sur les quatre
               premiers jours de mesure, début septembre 2026.
             </p>
+            {songspot.appStoreAchievement && (
+              <>
+                <strong>{songspot.appStoreAchievement.value}</strong>
+                <p className="result-block__label">
+                  {songspot.appStoreAchievement.label}
+                </p>
+              </>
+            )}
           </div>
         </section>
 
