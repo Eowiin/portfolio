@@ -10,7 +10,7 @@ export const siteConfig = {
   description:
     "Ethan Saux, développeur full-stack freelance. Applications mobiles et web, en distanciel de préférence ou en présentiel à Paris et ses alentours.",
   contactLinks: [
-    { label: "Email", href: "mailto:esaux.pro@proton.me" },
+    { label: "Email", href: "mailto:contact@ethansaux.fr" },
     { label: "LinkedIn", href: null },
     { label: "GitHub", href: null },
   ] satisfies ContactLink[],
