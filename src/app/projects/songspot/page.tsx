@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Songspot — Étude de cas",
     description:
-      "Le blind test musical, à jouer seul ou en duel. 30 000+ inscrits sur iOS, Android et le Web.",
+      "Le blind test musical, à jouer seul ou en duel. 50 000+ inscrits sur iOS, Android et le Web.",
   },
 };
 
@@ -88,7 +88,7 @@ export default function SongspotPage() {
           <dl className="case-facts">
             <div>
               <dt>Audience</dt>
-              <dd>30 000+ inscrits</dd>
+              <dd>50 000+ inscrits</dd>
             </div>
             <div>
               <dt>Plateformes</dt>
@@ -137,13 +137,13 @@ export default function SongspotPage() {
           </div>
           <div className="result-block">
             <p className="eyebrow eyebrow--purple">Résultat</p>
-            <strong>30 000+</strong>
-            <p className="result-block__label">inscrits · début septembre 2026</p>
-            <strong>≈ 3 000</strong>
+            <strong>56 000</strong>
+            <p className="result-block__label">inscrits · début octobre 2026</p>
+            <strong>600 à 900</strong>
             <p className="result-block__label">utilisateurs actifs par jour</p>
             <p className="result-block__note">
-              Environ 3 000 utilisateurs actifs par jour observés sur les quatre
-              premiers jours de mesure, début septembre 2026.
+              Entre 600 et 900 utilisateurs actifs par jour observés début
+              octobre 2026.
             </p>
             {songspot.appStoreAchievement && (
               <>

@@ -32,7 +32,7 @@ export const projects: Project[] = [
     slug: "songspot",
     name: "Songspot",
     category: "Blind test musical",
-    registeredUsers: "30 000+ inscrits",
+    registeredUsers: "50 000+ inscrits",
     appStoreAchievement: {
       value: "Top 7",
       label: "atteint dans la catégorie Musique de l’App Store",
