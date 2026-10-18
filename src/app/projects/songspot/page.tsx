@@ -38,12 +38,12 @@ export default function SongspotPage() {
         </nav>
         <section className="case-hero shell" aria-labelledby="case-title">
           <div className="case-hero__copy entrance">
-            <p className="eyebrow eyebrow--purple">Songspot · Étude de cas</p>
+            <p className="eyebrow eyebrow--accent">Songspot · Étude de cas</p>
             <h1 id="case-title">Le blind test musical, à jouer seul ou en duel.</h1>
             <p>{songspot.summary}</p>
             <div className="case-actions">
               <a
-                className="button button--purple"
+                className="button button--accent"
                 href={songspot.links.appStore}
                 target="_blank"
                 rel="noreferrer"
@@ -51,7 +51,7 @@ export default function SongspotPage() {
                 Voir sur l’App Store ↗
               </a>
               <a
-                className="button button--purple-outline"
+                className="button button--accent-outline"
                 href={songspot.links.playStore}
                 target="_blank"
                 rel="noreferrer"
@@ -111,7 +111,7 @@ export default function SongspotPage() {
 
         <section className="case-section shell" aria-labelledby="features-title">
           <div className="case-section__heading">
-            <p className="eyebrow eyebrow--purple">Fonctionnalités</p>
+            <p className="eyebrow eyebrow--accent">Fonctionnalités</p>
             <h2 id="features-title">Des parties variées, seul ou face à un autre joueur.</h2>
           </div>
           <ol className="feature-list">
@@ -136,7 +136,7 @@ export default function SongspotPage() {
             </p>
           </div>
           <div className="result-block">
-            <p className="eyebrow eyebrow--purple">Résultat</p>
+            <p className="eyebrow eyebrow--accent">Résultat</p>
             <strong>56 000</strong>
             <p className="result-block__label">inscrits · début octobre 2026</p>
             <strong>600 à 900</strong>
@@ -157,7 +157,7 @@ export default function SongspotPage() {
         </section>
 
         <section className="technical-section shell" aria-labelledby="technical-title">
-          <p className="eyebrow eyebrow--purple">Défi technique</p>
+          <p className="eyebrow eyebrow--accent">Défi technique</p>
           <h2 id="technical-title">Le 1v1 en temps réel.</h2>
           <p>
             Le mode duel repose sur des échanges en WebSocket entre l’application
@@ -167,7 +167,7 @@ export default function SongspotPage() {
         </section>
 
         <section className="technical-section shell" aria-labelledby="architecture-title">
-          <p className="eyebrow eyebrow--purple">Architecture</p>
+          <p className="eyebrow eyebrow--accent">Architecture</p>
           <h2 id="architecture-title">Une application multiplateforme, un backend commun.</h2>
           <p>
             Flutter permet de proposer le jeu sur iOS, Android et le web.
@@ -182,23 +182,23 @@ export default function SongspotPage() {
 
         <section className="gallery-section" aria-labelledby="gallery-title">
           <div className="gallery-section__heading shell">
-            <p className="eyebrow eyebrow--purple">Dans le produit</p>
+            <p className="eyebrow eyebrow--accent">Dans le produit</p>
             <h2 id="gallery-title">Choisir, écouter, défier, progresser.</h2>
             <p>
               Les écrans clés d’une expérience conçue pour relancer une partie en
               quelques secondes.
             </p>
           </div>
-          <ProjectGallery images={songspot.images} />
+          <ProjectGallery projectName={songspot.name} images={songspot.images} />
         </section>
 
         <section className="case-cta" aria-labelledby="case-cta-title">
           <div className="shell case-cta__inner">
-            <p className="eyebrow eyebrow--purple">Essayer Songspot</p>
+            <p className="eyebrow eyebrow--accent">Essayer Songspot</p>
             <h2 id="case-cta-title">Prêt à tester votre culture musicale&nbsp;?</h2>
             <div className="case-actions case-actions--centered">
               <a
-                className="button button--purple"
+                className="button button--accent"
                 href={songspot.links.appStore}
                 target="_blank"
                 rel="noreferrer"
@@ -206,7 +206,7 @@ export default function SongspotPage() {
                 Voir sur l’App Store ↗
               </a>
               <a
-                className="button button--purple-outline"
+                className="button button--accent-outline"
                 href={songspot.links.playStore}
                 target="_blank"
                 rel="noreferrer"

@@ -14,8 +14,33 @@
   --purple: #8f5cff;
   --purple-soft: #b99aff;
   --songspot-dark: #131426;
+  /* Project accent: Songspot by default, overridden by .theme-* below. */
+  --accent: var(--purple);
+  --accent-soft: var(--purple-soft);
+  --accent-strong: #a477ff;
+  --accent-text: #cdbbfa;
+  --accent-text-strong: #efe8ff;
+  --accent-link: #c7b4f4;
+  --accent-rgb: 143, 92, 255;
+  --accent-soft-rgb: 185, 154, 255;
+  --capture-background: var(--songspot-dark);
+  /* Room left under the notch for captures without a status bar. */
+  --capture-inset-top: 0rem;
   --focus: #f4b75a;
   --shell: 1560px;
+}
+
+.theme-cinemap {
+  --accent: #d63a44;
+  --accent-soft: #f0898f;
+  --accent-strong: #e5525b;
+  --accent-text: #f4b1b4;
+  --accent-text-strong: #fde9ea;
+  --accent-link: #f0a0a4;
+  --accent-rgb: 214, 58, 68;
+  --accent-soft-rgb: 240, 137, 143;
+  --capture-background: #faf8f6;
+  --capture-inset-top: 1.65rem;
 }
 
 * {
@@ -139,8 +164,8 @@ ul {
   text-transform: uppercase;
 }
 
-.eyebrow--purple {
-  color: var(--purple-soft);
+.eyebrow--accent {
+  color: var(--accent-soft);
 }
 
 .site-header {
@@ -293,7 +318,7 @@ ul {
   background: radial-gradient(
     circle,
     rgba(187, 127, 54, 0.3),
-    rgba(143, 92, 255, 0.12) 42%,
+    rgba(var(--accent-rgb), 0.12) 42%,
     transparent 70%
   );
   filter: blur(24px);
@@ -367,10 +392,11 @@ ul {
 
 .phone__capture,
 .case-phone__capture {
-  height: 100%;
-  inset: 0;
+  height: calc(100% - var(--capture-inset-top));
+  inset: var(--capture-inset-top) 0 auto;
   max-width: none;
   object-fit: cover;
+  object-position: top;
   position: absolute;
   width: 100%;
 }
@@ -425,7 +451,7 @@ ul {
 .project-card {
   align-items: center;
   background:
-    linear-gradient(105deg, rgba(143, 92, 255, 0.055), transparent 38%),
+    linear-gradient(105deg, rgba(var(--accent-rgb), 0.055), transparent 38%),
     rgba(13, 12, 11, 0.72);
   border: 1px solid var(--line);
   display: grid;
@@ -442,7 +468,7 @@ ul {
 }
 
 .project-card::after {
-  background: radial-gradient(circle, rgba(143, 92, 255, 0.2), transparent 68%);
+  background: radial-gradient(circle, rgba(var(--accent-rgb), 0.2), transparent 68%);
   content: "";
   height: 20rem;
   left: -8rem;
@@ -477,11 +503,11 @@ ul {
   text-transform: uppercase;
 }
 
-.songspot-mark {
+.project-mark {
   align-items: center;
   aspect-ratio: 1;
-  background: linear-gradient(145deg, rgba(143, 92, 255, 0.14), rgba(12, 11, 12, 0.8));
-  border: 1px solid rgba(185, 154, 255, 0.25);
+  background: linear-gradient(145deg, rgba(var(--accent-rgb), 0.14), rgba(12, 11, 12, 0.8));
+  border: 1px solid rgba(var(--accent-soft-rgb), 0.25);
   border-radius: 1.35rem;
   display: flex;
   flex: 0 0 6.5rem;
@@ -490,7 +516,7 @@ ul {
   position: relative;
 }
 
-.songspot-mark img {
+.project-mark img {
   height: 100%;
   object-fit: cover;
   width: 100%;
@@ -523,9 +549,9 @@ ul {
 }
 
 .metric-dot {
-  background: var(--purple);
+  background: var(--accent);
   border-radius: 50%;
-  box-shadow: 0 0 1.2rem rgba(143, 92, 255, 0.72);
+  box-shadow: 0 0 1.2rem rgba(var(--accent-rgb), 0.72);
   height: 0.65rem;
   width: 0.65rem;
 }
@@ -676,11 +702,11 @@ ul {
   letter-spacing: 0.12em;
 }
 
-/* Songspot case study */
+/* Case studies */
 
 .case-page {
   background:
-    radial-gradient(ellipse 48rem 48rem at 85% 25rem, rgba(143, 92, 255, 0.23), transparent 75%),
+    radial-gradient(ellipse 48rem 48rem at 85% 25rem, rgba(var(--accent-rgb), 0.23), transparent 75%),
     var(--background);
 }
 
@@ -745,30 +771,30 @@ ul {
   margin-top: 2.6rem;
 }
 
-.button--purple {
-  background: var(--purple);
-  border: 1px solid var(--purple);
+.button--accent {
+  background: var(--accent);
+  border: 1px solid var(--accent);
   color: #fff;
 }
 
-.button--purple:hover {
-  background: #a477ff;
-  border-color: #a477ff;
+.button--accent:hover {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
 }
 
-.button--purple-outline {
-  border: 1px solid rgba(185, 154, 255, 0.72);
-  color: #cdbbfa;
+.button--accent-outline {
+  border: 1px solid rgba(var(--accent-soft-rgb), 0.72);
+  color: var(--accent-text);
 }
 
-.button--purple-outline:hover {
-  background: rgba(143, 92, 255, 0.12);
-  border-color: var(--purple-soft);
-  color: #efe8ff;
+.button--accent-outline:hover {
+  background: rgba(var(--accent-rgb), 0.12);
+  border-color: var(--accent-soft);
+  color: var(--accent-text-strong);
 }
 
 .text-link {
-  color: #c7b4f4;
+  color: var(--accent-link);
   padding-block: 0.8rem;
 }
 
@@ -783,7 +809,7 @@ ul {
 }
 
 .case-hero__visual::before {
-  background: radial-gradient(circle, rgba(143, 92, 255, 0.24), transparent 65%);
+  background: radial-gradient(circle, rgba(var(--accent-rgb), 0.24), transparent 65%);
   bottom: 2rem;
   content: "";
   filter: blur(8px);
@@ -804,7 +830,7 @@ ul {
 }
 
 .case-phone__screen {
-  background: var(--songspot-dark);
+  background: var(--capture-background);
   border-radius: 2.68rem;
   height: 100%;
   overflow: hidden;
@@ -886,7 +912,7 @@ ul {
 }
 
 .feature-list span {
-  color: var(--purple-soft);
+  color: var(--accent-soft);
   font-size: 0.62rem;
   font-weight: 650;
   letter-spacing: 0.14em;
@@ -922,7 +948,7 @@ ul {
 
 .result-block {
   align-items: flex-start;
-  background: linear-gradient(145deg, rgba(143, 92, 255, 0.1), transparent 72%);
+  background: linear-gradient(145deg, rgba(var(--accent-rgb), 0.1), transparent 72%);
   border-left: 1px solid var(--line);
   display: flex;
   flex-direction: column;
@@ -1002,7 +1028,7 @@ ul {
   display: flex;
   width: max-content;
   padding-block: 0.5rem 1.5rem;
-  animation: gallery-marquee 65s linear infinite;
+  animation: gallery-marquee var(--gallery-duration, 65s) linear infinite;
 }
 
 .gallery-sequence {
@@ -1025,8 +1051,8 @@ ul {
 }
 
 .gallery-item__capture {
-  background: #10111f;
-  border: 1px solid rgba(185, 154, 255, 0.15);
+  background: var(--capture-background);
+  border: 1px solid rgba(var(--accent-soft-rgb), 0.15);
   box-shadow: 0 2rem 4rem rgba(0, 0, 0, 0.28);
   display: block;
   overflow: hidden;
@@ -1047,7 +1073,7 @@ ul {
 }
 
 .gallery-item figcaption span {
-  color: var(--purple-soft);
+  color: var(--accent-soft);
   font-size: 0.6rem;
   font-weight: 650;
   letter-spacing: 0.12em;
@@ -1065,7 +1091,7 @@ ul {
 }
 
 .case-cta::before {
-  background: radial-gradient(circle, rgba(143, 92, 255, 0.17), transparent 70%);
+  background: radial-gradient(circle, rgba(var(--accent-rgb), 0.17), transparent 70%);
   content: "";
   height: 42rem;
   left: 50%;
@@ -1356,7 +1382,7 @@ ul {
     font-size: 2.1rem;
   }
 
-  .songspot-mark {
+  .project-mark {
     border-radius: 1rem;
     flex-basis: 4.6rem;
   }
@@ -1508,7 +1534,8 @@ ul {
     animation: none;
   }
 
-  .gallery-sequence[aria-hidden="true"] {
+  .gallery-sequence[aria-hidden="true"],
+  .gallery-item[aria-hidden="true"] {
     display: none;
   }
 

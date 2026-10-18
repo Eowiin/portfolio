@@ -37,8 +37,8 @@ export default function Home() {
 
         <section className="projects-section shell" id="projets" aria-labelledby="projects-title">
           <div className="section-heading">
-            <p className="eyebrow">Projet sélectionné</p>
-            <h2 id="projects-title">Un produit lancé, utilisé et amélioré.</h2>
+            <p className="eyebrow">Projets sélectionnés</p>
+            <h2 id="projects-title">Des produits lancés, utilisés et améliorés.</h2>
           </div>
           <div className="project-list">
             {projects.map((project) => (

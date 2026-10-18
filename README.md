@@ -1,6 +1,6 @@
 # Portfolio — Ethan Saux
 
-Portfolio personnel d’Ethan Saux, développeur full-stack freelance. Le site présente les projets, le profil et les moyens de contact, avec une étude de cas dédiée à Songspot, un jeu de blind test musical.
+Portfolio personnel d’Ethan Saux, développeur full-stack freelance. Le site présente les projets, le profil et les moyens de contact, avec une étude de cas pour chaque projet : Songspot, un jeu de blind test musical, et Cinemap, la carte des séances de cinéma en France.
 
 ## Stack
 
@@ -57,6 +57,7 @@ src/
     layout.tsx               Structure commune et métadonnées
     globals.css              Styles et responsive
     projects/songspot/       Étude de cas Songspot
+    projects/cinemap/        Étude de cas Cinemap
     opengraph-image.tsx       Image de partage social
     robots.ts                Règles d’indexation
     sitemap.ts               Liste des pages à indexer
@@ -64,10 +65,10 @@ src/
   data/
     site.ts                  Identité, description et liens de contact
     projects.ts              Données, captures et liens des projets
-public/images/songspot/      Visuels utilisés sur le site
+public/images/<projet>/      Logos et captures de la galerie
 ```
 
-Pour modifier les coordonnées ou la présentation générale, éditer `src/data/site.ts`. Les informations et captures des projets se trouvent dans `src/data/projects.ts` ; le texte détaillé de Songspot est dans `src/app/projects/songspot/page.tsx`.
+Pour modifier les coordonnées ou la présentation générale, éditer `src/data/site.ts`. Les informations et captures des projets se trouvent dans `src/data/projects.ts` ; le texte détaillé de chaque projet est dans `src/app/projects/<projet>/page.tsx`. La couleur d’accent d’un projet se règle dans `src/app/globals.css` (classe `.theme-<projet>`).
 
 L’ajout d’une nouvelle page projet nécessite aussi de mettre à jour `src/app/sitemap.ts`.
 

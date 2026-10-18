@@ -5,13 +5,13 @@ import { Project } from "@/data/projects";
 export function ProjectCard({ project }: { project: Project }) {
   return (
     <Link
-      className="project-card"
+      className={`project-card theme-${project.slug}`}
       href={`/projects/${project.slug}`}
       aria-label={`Découvrir le projet ${project.name}`}
     >
       <div className="project-card__identity">
-        <span className="songspot-mark" aria-hidden="true">
-          <Image src="/images/songspot/logo.png" alt="" width={104} height={104} />
+        <span className="project-mark" aria-hidden="true">
+          <Image src={project.logo} alt="" width={104} height={104} />
         </span>
         <h3>{project.name}</h3>
       </div>
@@ -20,7 +20,7 @@ export function ProjectCard({ project }: { project: Project }) {
         <p className="project-card__category">{project.category}</p>
         <p className="project-card__metric">
           <span className="metric-dot" aria-hidden="true" />
-          {project.registeredUsers}
+          {project.metric}
         </p>
         {project.appStoreAchievement && (
           <p className="project-card__achievement">

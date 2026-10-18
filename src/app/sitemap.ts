@@ -13,5 +13,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.8,
     },
+    {
+      url: `${siteConfig.siteUrl}/projects/cinemap`,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
   ];
 }
